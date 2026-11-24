@@ -94,10 +94,12 @@ export default function DesktopSideNav({ onSelect }) {
 
     return (
         <nav
-            className="flex flex-col h-screen w-64 pt-5 pb-6 px-4 border-r overflow-y-auto"
+            className="flex flex-col h-screen w-64 pb-5 px-2 border-r overflow-y-auto custom-scrollbar"
             style={{ borderColor: "#EEEEF2", backgroundColor: COLORS.primaryLight }}
         >
-            <div className="pb-6 px-1">
+            <div className="py-4 px-1 sticky top-0"
+            style={{backgroundColor: COLORS.primaryLight}}
+            >
                 <Logo size={22} color="#fff" />
             </div>
 

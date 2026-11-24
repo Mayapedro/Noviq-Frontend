@@ -34,17 +34,17 @@
 :root {
   --radius: 0.625rem;
   --background: 0 0% 100%;
-  --foreground: 220 15% 25%;  
+  --foreground: 220 15% 25%;
   --card: 0 0% 100%;
-  --card-foreground: 220 15% 28%; 
+  --card-foreground: 220 15% 28%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 15% 25%;
   --primary: 262 83% 58%;
   --primary-foreground: 0 0% 100%;
   --secondary: 258 60% 96%;
-  --secondary-foreground: 260 20% 35%;  
+  --secondary-foreground: 260 20% 35%;
   --muted: 258 60% 97%;
-  --muted-foreground: 255 15% 55%; 
+  --muted-foreground: 255 15% 55%;
   --accent: 258 60% 95%;
   --accent-foreground: 260 20% 35%;
   --destructive: 0 84.2% 60.2%;
@@ -52,7 +52,7 @@
   --border: 258 30% 91%;
   --input: 258 30% 91%;
   --ring: 262 83% 58%;
-  
+
   --brand-dark: 263 62% 10%;
   --brand-dark-foreground: 0 0% 100%;
 }
@@ -92,12 +92,89 @@
     font-weight: 400;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     letter-spacing: -0.02em;
     font-weight: 600;
   }
 
-  p, span, li, a, button, label {
+  p,
+  span,
+  li,
+  a,
+  button,
+  label {
     font-weight: 400;
+  }
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.35);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 9999px;
+    min-height: 32px;
+    min-width: 32px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.6);
+  }
+
+  /* Arrow buttons */
+  &::-webkit-scrollbar-button:single-button {
+    display: block;
+    width: 8px;
+    height: 12px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 8px 8px;
+  }
+
+  /* Up */
+  &::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 6l3-4 3 4z' fill='%238A8A94'/%3E%3C/svg%3E");
+  }
+
+  /* Down */
+  &::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 2l3 4 3-4z' fill='%238A8A94'/%3E%3C/svg%3E");
+  }
+
+  /* Left */
+  &::-webkit-scrollbar-button:single-button:horizontal:decrement {
+    width: 12px;
+    height: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M6 1L2 4l4 3z' fill='%238A8A94'/%3E%3C/svg%3E");
+  }
+
+  /* Right */
+  &::-webkit-scrollbar-button:single-button:horizontal:increment {
+    width: 12px;
+    height: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M2 1l4 3-4 3z' fill='%238A8A94'/%3E%3C/svg%3E");
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
   }
 }
