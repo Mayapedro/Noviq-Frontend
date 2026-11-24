@@ -49,4 +49,16 @@ export const COLORS = {
     cancel: "#FDBF93",
     cancelBg: "#FEFAF7",
     cancelText: "#FDBF93",
+
+    // Navigation
+    iconActive: "#7c5cfc",
+    iconIdle: "#5c5875",
+    iconFill: "rgba(124, 92, 252, 0.25)",
+    navHover: "#e0dfe2",
+    navActiveText: "#1f1d2b",
+    navBorder: "#EEEEF2",
+    navMutedText: "#8A8A94",
+    navScrollbar: "#d4d2da",
+    navWhite: "#FFFFFF",
+    navWhiteBackground: "rgba(255, 255, 255, 0.8)",
 };

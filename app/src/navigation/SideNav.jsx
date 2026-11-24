@@ -1,25 +1,20 @@
 "use client";
 import Logo from "@/components/ui/logo";
 import { COLORS } from "@/lib/constants";
-import { Settings, Support, Home, Projects, Logout, Star } from "@/components/ui/icons";
+import { Settings, Support, Home, Projects, Logout, Star, TemplatesIcon } from "@/components/ui/icons";
 import { useNavigate } from "@/lib/hooks/router";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { FolderClock, Plus, Search, X } from "lucide-react";
+import { Clapperboard, FolderClock, PanelLeftClose, PanelLeftOpen, PlusCircle, Search, X } from "lucide-react";
 
-// Templates Icon
-const TemplatesIcon = ({ width = 16, height = 16 }) => (
-    <svg width={width} height={height} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 6h5l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
-        <path d="M10 10h7a1 1 0 0 1 1 1v2" />
-        <line x1="13" y1="14" x2="18" y2="14" />
-    </svg>
-);
+
+const AI_SPACE = "aispace";
 
 const mainPaths = [
     { label: "Dashboard", value: "", icon: Home },
-    { label: "Noviq AI", value: "aispace", icon: Star },
+    { label: "Noviq AI", value: AI_SPACE, icon: Star },
     { label: "Projects", value: "projects", icon: Projects },
+    { label: "Create", value: "create", icon: Clapperboard },
     { label: "Templates", value: "templates", icon: TemplatesIcon },
 ];
 
@@ -29,32 +24,24 @@ const secondaryPaths = [
 ];
 
 const chatHistories = [
-    {
-        chathistoryname: "Summer Campaign Video",
-        time: "1d ago",
-        chathistoryid: "chat-summer-campaign",
-    },
-    {
-        chathistoryname: "Social media content ideas",
-        time: "2hr ago",
-        chathistoryid: "chat-social-media",
-    },
-    {
-        chathistoryname: "Product launch campaign",
-        time: "4hr ago",
-        chathistoryid: "chat-product-launch",
-    },
-    {
-        chathistoryname: "Video storyboard",
-        time: "Yesterday",
-        chathistoryid: "chat-video-storyboard",
-    },
+    { chathistoryname: "Video creation", time: "Today", chathistoryid: "chat-video-creation" },
+    { chathistoryname: "Social media content ideas", time: "2hr ago", chathistoryid: "chat-social-media" },
+    { chathistoryname: "Product launch campaign", time: "4hr ago", chathistoryid: "chat-product-launch" },
+    { chathistoryname: "Video storyboard", time: "Yesterday", chathistoryid: "chat-video-storyboard" },
+    { chathistoryname: "Video storyboard", time: "Yesterday", chathistoryid: "chat-video-storyboard-2" },
 ];
 
 export default function DesktopSideNav({ onSelect }) {
-    const [active, setActive] = useState("dashboard");
+    const [active, setActive] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [hovered, setHovered] = useState(null);
+    const [activeChat, setActiveChat] = useState(null);
+    const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
+
+    // Expanded only while Noviq AI is active AND the user hasn't hidden the panel
+    const expanded = active === AI_SPACE && !collapsed;
+    const hidden = active === AI_SPACE && collapsed;
 
     const filteredChats = useMemo(() => {
         const query = searchQuery.trim().toLowerCase();
@@ -67,25 +54,43 @@ export default function DesktopSideNav({ onSelect }) {
     const handleClick = (value) => {
         onSelect?.(value);
         setActive(value);
+        if (value === AI_SPACE) setCollapsed(false);
+        if (value !== AI_SPACE) setSearchQuery("");
         navigate.to(`/workspace/${value}`, { relative: false });
     };
 
     const renderItem = ({ label, value, icon: Icon }) => {
         const isActive = active === value;
+        const highlighted = isActive || hovered === value;
 
         return (
             <button
                 key={value}
                 onClick={() => handleClick(value)}
-                className={cn(
-                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-colors",
-                    isActive && "bg-[#e0dfe2]"
-                )}
+                onMouseEnter={() => setHovered(value)}
+                onMouseLeave={() => setHovered(null)}
+                className="flex flex-col items-center gap-1 w-full py-2 rounded-lg transition-colors hover:bg-[var(--nav-hover)]/60"
             >
-                <div className="flex items-center justify-center h-5 w-5 shrink-0 text-[#5c5875]">
-                    <Icon width={16} height={16} />
+                <div
+                    className={cn(
+                        "flex items-center justify-center h-4 w-4 shrink-0",
+                    )}
+                    style={{ color: highlighted ? COLORS.iconActive : COLORS.iconIdle }}
+                >
+                    <Icon
+                        width={15}
+                        height={15}
+                        color={highlighted ? COLORS.iconActive : COLORS.iconIdle}
+                        fill={highlighted ? COLORS.iconFill : "none"}
+                    />
                 </div>
-                <span className="text-[12px] font-medium text-[#5c5875]">
+                <span
+                    className={cn(
+                        "text-[9px] leading-none",
+                        isActive ? "font-semibold" : "font-medium"
+                    )}
+                    style={{ color: isActive ? COLORS.navActiveText : COLORS.iconIdle }}
+                >
                     {label}
                 </span>
             </button>
@@ -93,113 +98,178 @@ export default function DesktopSideNav({ onSelect }) {
     };
 
     return (
+        <>
+        {hidden && (
+            <button
+                onClick={() => setCollapsed(false)}
+                aria-label="Show sidebar"
+                title="Show sidebar"
+                className="fixed top-4 left-3 z-50 flex items-center justify-center h-7 w-7 rounded-md shadow-sm transition-colors hover:bg-[var(--nav-hover)]"
+                style={{ color: COLORS.iconIdle, backgroundColor: COLORS.navWhiteBackground }}
+            >
+                <PanelLeftOpen size={16} />
+            </button>
+        )}
+
         <nav
-            className="flex flex-col h-screen w-64 pb-5 px-2 border-r overflow-y-auto custom-scrollbar"
-            style={{ borderColor: "#EEEEF2", backgroundColor: COLORS.primaryLight }}
+            aria-hidden={hidden}
+            className={cn(
+                "flex flex-col h-screen shrink-0 pb-5 overflow-y-auto overflow-x-hidden custom-scrollbar",
+                "transition-[width] duration-200 ease-in-out",
+                hidden ? "w-0 px-0 invisible pointer-events-none" : expanded ? "w-44 px-1.5" : "w-24 px-1.5"
+            )}
+            style={{
+                backgroundColor: COLORS.primaryLight,
+                "--nav-hover": COLORS.navHover,
+                "--nav-scrollbar": COLORS.navScrollbar,
+                "--nav-muted": COLORS.navMutedText,
+            }}
         >
-            <div className="py-4 px-1 sticky top-0"
-            style={{backgroundColor: COLORS.primaryLight}}
+            {/* Logo + collapse toggle */}
+            <div
+                className="sticky top-0 z-10 flex items-center justify-center py-4"
+                style={{ backgroundColor: COLORS.primaryLight }}
             >
                 <Logo size={22} color="#fff" />
+
+                {expanded && (
+                    <button
+                        onClick={() => setCollapsed(true)}
+                        aria-label="Hide sidebar"
+                        title="Hide sidebar"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-md transition-colors hover:bg-[var(--nav-hover)]/60"
+                        style={{ color: COLORS.iconIdle }}
+                    >
+                        <PanelLeftClose size={15} />
+                    </button>
+                )}
             </div>
 
             {/* Main nav */}
             <div className="flex flex-col gap-1 w-full">
-                {mainPaths.map(renderItem)}
+                {mainPaths.map((item) => renderItem(item))}
             </div>
 
-            {/* New Chat Button */}
-            <div className="w-full my-4">
-                <button
-                    onClick={() => navigate.to("new-chat", { relative: true })}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl text-white text-[12px] font-medium bg-[#7c5cfc] transition-opacity hover:opacity-90 shadow-sm"
-                >
-                    <Plus size={16} />
-                    <span>New chat</span>
-                </button>
-            </div>
-
-            {/* Search Input */}
-            <div className="w-full mb-4">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white/60 shadow-2xs" style={{ borderColor: "#EEEEF2" }}>
-                    <Search size={14} className="text-[#8A8A94] shrink-0" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search conversation..."
-                        className="w-full bg-transparent text-[11px] text-[#5c5875] placeholder-[#8A8A94] focus:outline-none"
-                    />
-                    {searchQuery && (
+            {expanded ? (
+                <>
+                    {/* New Chat Button */}
+                    <div className="w-full mt-6 mb-3 px-1">
                         <button
-                            onClick={() => setSearchQuery("")}
-                            aria-label="Clear search"
-                            className="shrink-0 text-[#8A8A94] hover:text-[#5c5875]"
+                            onClick={() => {
+                                setActiveChat(null);
+                                navigate.to("new-chat", { relative: true });
+                            }}
+                            className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 rounded-lg text-[10px] font-medium transition-opacity hover:opacity-90 shadow-sm"
+                            style={{ color: COLORS.navWhite, backgroundColor: COLORS.iconActive }}
                         >
-                            <X size={14} />
+                            <PlusCircle size={13} />
+                            <span>New chat</span>
                         </button>
-                    )}
-                </div>
-            </div>
+                    </div>
 
-            {/* Recent Section */}
-            <div className="w-full mb-3">
-                <div className="text-[10px] font-semibold text-[#8A8A94] px-1 mb-2 uppercase tracking-wider">
-                    {searchQuery.trim() ? "Results" : "Recent"}
-                </div>
-                <div className="flex flex-col gap-1">
-                    {filteredChats.length > 0 ? (
-                        filteredChats.map((chat) => (
-                            <button
-                                key={chat.chathistoryid}
-                                onClick={() => navigate.to(chat.chathistoryid, { relative: true })}
-                                className="flex items-start gap-2.5 w-full p-2 rounded-lg text-left transition-colors hover:bg-[#e0dfe2]"
-                                title={chat.chathistoryname}
-                            >
-                                <span className="shrink-0 mt-0.5 text-[#5c5875]">
-                                    <FolderClock size={16} strokeWidth={2} />
-                                </span>
-                                <div className="overflow-hidden">
-                                    <p className="text-[11px] text-[#5c5875] font-medium truncate leading-snug">
-                                        {chat.chathistoryname}
-                                    </p>
-                                    <p className="text-[9px] text-[#8A8A94] leading-none mt-0.5">
-                                        {chat.time}
-                                    </p>
-                                </div>
-                            </button>
-                        ))
-                    ) : (
-                        <p className="text-[11px] text-[#8A8A94] px-2 py-3">
-                            No conversations found
-                        </p>
-                    )}
-                </div>
-            </div>
+                    {/* Search Input */}
+                    <div className="w-full mb-5 px-1">
+                        <div
+                            className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-white/60"
+                            style={{ borderColor: COLORS.navBorder }}
+                        >
+                            <Search size={11} className="shrink-0" style={{ color: COLORS.navMutedText }} />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search conversation..."
+                                className="w-full min-w-0 bg-transparent text-[9px] placeholder-[var(--nav-muted)] focus:outline-none"
+                                style={{ color: COLORS.iconIdle }}
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    aria-label="Clear search"
+                                    className="shrink-0"
+                                    style={{ color: COLORS.iconIdle }}
+                                >
+                                    <X size={11} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
-            {/* Spacer pushes secondary nav to bottom */}
-            <div className="flex-1" />
+                    <div className="flex flex-col flex-1 min-h-[250px] w-full mb-3">
+                        <div className="shrink-0 text-[11px] font-medium px-2 mb-2" style={{ color: COLORS.navActiveText }}>
+                            {searchQuery.trim() ? "Results" : "Recent"}
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0.5 [scrollbar-width:thin] [scrollbar-color:var(--nav-scrollbar)_transparent]">
+                            {filteredChats.length > 0 ? (
+                                filteredChats.map((chat) => {
+                                    const isActiveChat = activeChat === chat.chathistoryid;
+                                    return (
+                                        <button
+                                            key={chat.chathistoryid}
+                                            onClick={() => {
+                                                setActiveChat(chat.chathistoryid);
+                                                navigate.to(chat.chathistoryid, { relative: true });
+                                            }}
+                                            className={cn(
+                                                "flex items-start gap-2 w-full px-2 py-1.5 rounded-lg text-left transition-colors",
+                                                isActiveChat ? "bg-[var(--nav-hover)]" : "hover:bg-[var(--nav-hover)]/40"
+                                            )}
+                                            title={chat.chathistoryname}
+                                        >
+                                            <FolderClock
+                                                size={13}
+                                                strokeWidth={2}
+                                                className="shrink-0 mt-0.5"
+                                                style={{ color: COLORS.iconIdle }}
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="text-[9px] font-medium leading-snug truncate" style={{ color: COLORS.navActiveText }}>
+                                                    {chat.chathistoryname}
+                                                </p>
+                                                <p className="text-[8px] leading-none mt-1" style={{ color: COLORS.navMutedText }}>
+                                                    {chat.time}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-[9px] px-2 py-3" style={{ color: COLORS.navMutedText }}>
+                                    No conversations found
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className="flex-1" />
+            )}
 
             {/* Secondary nav */}
-            <div className="flex flex-col gap-1 w-full pt-3 border-t" style={{ borderColor: "#EEEEF2" }}>
-                {secondaryPaths.map(renderItem)}
-
-                {/* Divider Line between Support and Logout */}
-                <div className="my-1.5 border-t w-full opacity-60" style={{ borderColor: "#EEEEF2" }} />
+            <div className="flex flex-col gap-1 w-full pt-3">
+                {secondaryPaths.map((item) => renderItem(item))}
 
                 {/* Logout */}
                 <button
                     onClick={() => navigate.to("logout")}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-colors hover:bg-[#e0dfe2]"
+                    onMouseEnter={() => setHovered("logout")}
+                    onMouseLeave={() => setHovered(null)}
+                    className="flex flex-col items-center gap-1 w-full py-2 mt-3 rounded-lg transition-colors hover:bg-[var(--nav-hover)]/60"
                 >
-                    <div className="flex items-center justify-center h-5 w-5 shrink-0 text-[#8A8A94]">
-                        <Logout width={16} height={16} color="#8A8A94" />
+                    <div className="flex items-center justify-center h-4 w-4 shrink-0" style={{ color: COLORS.iconIdle }}>
+                        <Logout
+                            width={15}
+                            height={15}
+                            color={hovered === "logout" ? COLORS.iconActive : COLORS.iconIdle}
+                            fill={hovered === "logout" ? COLORS.iconFill : "none"}
+                        />
                     </div>
-                    <span className="text-[12px] font-medium text-[#8A8A94]">
+                    <span className="text-[9px] leading-none font-medium" style={{ color: COLORS.iconIdle }}>
                         Logout
                     </span>
                 </button>
             </div>
         </nav>
+        </>
     );
 }
