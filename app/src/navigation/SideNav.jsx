@@ -3,9 +3,9 @@ import Logo from "@/components/ui/logo";
 import { COLORS } from "@/lib/constants";
 import { Settings, Support, Home, Projects, Logout, Star } from "@/components/ui/icons";
 import { useNavigate } from "@/lib/hooks/router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { FolderClock, Plus, Search } from "lucide-react";
+import { FolderClock, Plus, Search, X } from "lucide-react";
 
 // Templates Icon
 const TemplatesIcon = ({ width = 16, height = 16 }) => (
@@ -17,7 +17,7 @@ const TemplatesIcon = ({ width = 16, height = 16 }) => (
 );
 
 const mainPaths = [
-    { label: "Dashboard", value: "dashboard", icon: Home },
+    { label: "Dashboard", value: "", icon: Home },
     { label: "Noviq AI", value: "aispace", icon: Star },
     { label: "Projects", value: "projects", icon: Projects },
     { label: "Templates", value: "templates", icon: TemplatesIcon },
@@ -53,12 +53,21 @@ const chatHistories = [
 
 export default function DesktopSideNav({ onSelect }) {
     const [active, setActive] = useState("dashboard");
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
+
+    const filteredChats = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return chatHistories;
+        return chatHistories.filter((chat) =>
+            chat.chathistoryname.toLowerCase().includes(query)
+        );
+    }, [searchQuery]);
 
     const handleClick = (value) => {
         onSelect?.(value);
         setActive(value);
-        navigate.to(value, { relative: false });
+        navigate.to(`/workspace/${value}`, { relative: false });
     };
 
     const renderItem = ({ label, value, icon: Icon }) => {
@@ -114,34 +123,55 @@ export default function DesktopSideNav({ onSelect }) {
                     <Search size={14} className="text-[#8A8A94] shrink-0" />
                     <input
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search conversation..."
                         className="w-full bg-transparent text-[11px] text-[#5c5875] placeholder-[#8A8A94] focus:outline-none"
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            aria-label="Clear search"
+                            className="shrink-0 text-[#8A8A94] hover:text-[#5c5875]"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Recent Section */}
             <div className="w-full mb-3">
                 <div className="text-[10px] font-semibold text-[#8A8A94] px-1 mb-2 uppercase tracking-wider">
-                    Recent
+                    {searchQuery.trim() ? "Results" : "Recent"}
                 </div>
                 <div className="flex flex-col gap-1">
-                    {chatHistories.map((chat) => (
-                        <button
-                            key={chat.chathistoryid}
-                            onClick={() => navigate.to(chat.chathistoryid, { relative: true })}
-                            className="flex items-start gap-2.5 w-full p-2 rounded-lg text-left transition-colors hover:bg-[#e0dfe2]"
-                            title={chat.chathistoryname}
-                        >
-                            <span className="shrink-0 mt-0.5 text-[#5c5875]">
-                                <FolderClock size={16} strokeWidth={2} />
-                            </span>
-                            <div className="overflow-hidden">
-                                <p className="text-[11px] text-[#5c5875] font-medium truncate leading-snug">{chat.chathistoryname}</p>
-                                <p className="text-[9px] text-[#8A8A94] leading-none mt-0.5">{chat.time}</p>
-                            </div>
-                        </button>
-                    ))}
+                    {filteredChats.length > 0 ? (
+                        filteredChats.map((chat) => (
+                            <button
+                                key={chat.chathistoryid}
+                                onClick={() => navigate.to(chat.chathistoryid, { relative: true })}
+                                className="flex items-start gap-2.5 w-full p-2 rounded-lg text-left transition-colors hover:bg-[#e0dfe2]"
+                                title={chat.chathistoryname}
+                            >
+                                <span className="shrink-0 mt-0.5 text-[#5c5875]">
+                                    <FolderClock size={16} strokeWidth={2} />
+                                </span>
+                                <div className="overflow-hidden">
+                                    <p className="text-[11px] text-[#5c5875] font-medium truncate leading-snug">
+                                        {chat.chathistoryname}
+                                    </p>
+                                    <p className="text-[9px] text-[#8A8A94] leading-none mt-0.5">
+                                        {chat.time}
+                                    </p>
+                                </div>
+                            </button>
+                        ))
+                    ) : (
+                        <p className="text-[11px] text-[#8A8A94] px-2 py-3">
+                            No conversations found
+                        </p>
+                    )}
                 </div>
             </div>
 
